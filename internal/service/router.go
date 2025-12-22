@@ -17,7 +17,7 @@ func (s *service) router() chi.Router {
 		),
 	)
 	r.Route("/integrations/url-shortener-svc", func(r chi.Router) {
-		// configure endpoints here
+		r.Post("/shorten-url", handlers.ShortenURL)
 	})
 
 	return r
