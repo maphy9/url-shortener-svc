@@ -8,8 +8,6 @@ CREATE TABLE url_mapping
     created_at TIMESTAMPTZ DEFAULT current_timestamp
 );
 
-CREATE INDEX IF NOT EXISTS url_mapping_index ON url_mapping(code);
-
 CREATE SEQUENCE IF NOT EXISTS code_sequence
 INCREMENT BY 1
 START WITH 1;

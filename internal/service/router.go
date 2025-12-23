@@ -17,8 +17,9 @@ func (s *service) router() chi.Router {
 			handlers.CtxDB(s.db),
 		),
 	)
-	r.Route("/integrations/url-shortener-svc", func(r chi.Router) {
-		r.Post("/shorten-url", handlers.ShortenURL)
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", handlers.ShortenURL)
+		r.Get("/{code}", handlers.ExpandURL)
 	})
 
 	return r
