@@ -1,7 +1,5 @@
 -- +migrate Up
-DROP TABLE IF EXISTS url_mapping;
-
-CREATE TABLE url_mapping
+CREATE TABLE IF NOT EXISTS url_mapping
 (
     url TEXT NOT NULL UNIQUE,
     code TEXT NOT NULL UNIQUE,

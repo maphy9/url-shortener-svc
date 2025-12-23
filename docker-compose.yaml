@@ -8,7 +8,7 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: password
     volumes:
-      - ./db:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -20,16 +20,28 @@ services:
       interval: 2s
       timeout: 10s
       retries: 5
+  migration:
+    build: .
+    container_name: migration
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["migrate", "up"]
   url-shortener:
     build: .
-    container_name: svc
+    container_name: url-shortener
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     command: ["run", "service"]
     develop:
       watch:
         - path: .
           action: rebuild
+
+volumes:
+  pgdata:

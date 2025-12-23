@@ -12,12 +12,12 @@ type ShortenURLRequest struct {
 	URL string `json:"url"`
 }
 
-func (r ShortenURLRequest) IsValid() bool {
-    u, err := url.Parse(r.URL)
-	if u.Scheme == "" {
-		u.Scheme = "https"
+func (r ShortenURLRequest) isValid() bool {
+	_, err := url.ParseRequestURI(r.URL)
+	if err != nil {
+		return false
 	}
-    return err == nil && u.Host != ""
+	return true
 }
 
 type Query struct {
@@ -42,8 +42,9 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, "Bad request body", http.StatusBadRequest)
 		return
-	}	
-	if !body.IsValid() {
+	}
+	fmt.Println(body.URL)
+	if !body.isValid() {
 		http.Error(w, "Bad url", http.StatusBadRequest)
 		return
 	}
