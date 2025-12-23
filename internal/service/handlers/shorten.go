@@ -19,6 +19,13 @@ func (r ShortenURLRequest) IsValid() bool {
     return err == nil && u.Host != ""
 }
 
+func (r ShortenURLRequest) ToSql() (string, []interface{}, error) {
+	return fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM URL_MAPPING
+		WHERE ORIGINAL_URL='%s';`, r.URL), []interface{}{}, nil
+}
+
 func ShortenURL(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("URL: %v, Method: %v\n", r.URL, r.Method)
 	var body ShortenURLRequest
@@ -30,10 +37,14 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad url", http.StatusBadRequest)
 		return
 	}
-	res, err := json.Marshal(body)
+	db := DB(r)
+	res, err := db.ExecWithResult(body)
 	if err != nil {
-		http.Error(w, "I am a teapot", http.StatusInternalServerError)
-		return
+		http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
 	}
-	w.Write(res)
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Internal server error: %v", err), http.StatusInternalServerError)
+	}
+	w.Write([]byte(fmt.Sprintf("Rows affected: %d", rowsAffected)))
 }
