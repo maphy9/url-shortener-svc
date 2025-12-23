@@ -22,4 +22,5 @@ ENV KV_VIPER_FILE=/usr/local/config/config.yaml
 
 RUN apk add --no-cache ca-certificates
 
-ENTRYPOINT ["url-shortener-svc", "run", "service"]
+ENTRYPOINT ["url-shortener-svc"]
+CMD [ "run", "service" ]

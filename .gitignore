@@ -6,3 +6,4 @@ docs/web_deploy
 vendor/
 .DS_Store
 __MACOSX/
+db/
