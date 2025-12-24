@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER} -h localhost",
+        ]
+      interval: 2s
+      timeout: 10s
+      retries: 5
+  migration:
+    build: .
+    container_name: migration
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["migrate", "up"]
+  url-shortener:
+    build: .
+    image: url-shortener-svc
+    container_name: url-shortener
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    command: ["run", "service"]
+    develop:
+      watch:
+        - path: .
+          action: rebuild
+  nginx:
+    image: nginx:1.29.4-alpine
+    container_name: nginx
+    ports:
+      - "8000:80"
+    depends_on:
+      - url-shortener
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+volumes:
+  pgdata:

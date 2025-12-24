@@ -4,3 +4,6 @@ config.*.yaml
 docs/node_modules
 docs/web_deploy
 vendor/
+.DS_Store
+__MACOSX/
+db/
