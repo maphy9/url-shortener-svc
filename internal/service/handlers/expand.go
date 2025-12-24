@@ -4,27 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/go-chi/chi"
 )
-
-func isValidCode(c string) bool {
-	if len(c) == 0 {
-		return false
-	}
-	for _, r := range c {
-		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9') {
-			return false
-		}
-	}
-	return true
-}
 
 func ExpandURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	code := chi.URLParam(r, "code")
-	if !isValidCode(code) {
+	matched, err := regexp.MatchString(`^[0-9a-zA-Z]{1,7}$`, code)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Server error: %v", err), http.StatusInternalServerError)
+		return		
+	}
+	if !matched {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
