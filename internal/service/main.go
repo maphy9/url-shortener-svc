@@ -13,7 +13,7 @@ import (
 
 type service struct {
 	log      *logan.Entry
-	db		 *pgdb.DB
+	db       *pgdb.DB
 	copus    types.Copus
 	listener net.Listener
 }
@@ -32,7 +32,7 @@ func (s *service) run() error {
 func newService(cfg config.Config) *service {
 	return &service{
 		log:      cfg.Log(),
-		db:		  cfg.DB(),
+		db:       cfg.DB(),
 		copus:    cfg.Copus(),
 		listener: cfg.Listener(),
 	}

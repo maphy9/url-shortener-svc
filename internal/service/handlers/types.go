@@ -3,7 +3,7 @@ package handlers
 import "time"
 
 type SQLQuery struct {
-	SQL string
+	SQL  string
 	Args []interface{}
 }
 
@@ -12,7 +12,7 @@ func (q SQLQuery) ToSql() (string, []interface{}, error) {
 }
 
 type URLMapping struct {
-	URL string				`db:"url" json:"url"`
-	Code string				`db:"code" json:"code"`
-	CreatedAt time.Time		`db:"created_at" json:"created_at"`
+	URL       string    `db:"url" json:"url"`
+	Code      string    `db:"code" json:"code"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }

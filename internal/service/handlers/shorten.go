@@ -35,7 +35,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			SELECT code FROM url_mapping
 			WHERE url = $1 LIMIT 1
 		`,
-		Args: []interface{} { body.URL },
+		Args: []interface{}{body.URL},
 	}
 	var code string
 	if err := db.GetContext(ctx, &code, query); err != nil {
@@ -48,7 +48,12 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		scheme = "https"
 	}
 	shortURL := fmt.Sprintf("%s://%s/%s", scheme, r.Host, code)
-	
+
+	log := Log(r)
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(shortURL))
+	_, err := w.Write([]byte(shortURL))
+	if err != nil {
+		log.WithError(err).Error("Write failed")
+		return
+	}
 }

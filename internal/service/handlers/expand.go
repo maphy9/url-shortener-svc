@@ -13,7 +13,7 @@ func isValidCode(c string) bool {
 		return false
 	}
 	for _, r := range c {
-		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <='9') {
+		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9') {
 			return false
 		}
 	}
@@ -22,7 +22,7 @@ func isValidCode(c string) bool {
 
 func ExpandURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	code := chi.URLParam(r, "code")
 	if !isValidCode(code) {
 		http.Error(w, "Not found", http.StatusNotFound)
@@ -35,11 +35,11 @@ func ExpandURL(w http.ResponseWriter, r *http.Request) {
 			SELECT url FROM url_mapping
 			WHERE code = $1
 		`,
-		Args: []interface{} { code },
+		Args: []interface{}{code},
 	}
 	var url string
 	if err := db.GetContext(ctx, &url, query); err == sql.ErrNoRows {
-		http.Error(w, fmt.Sprintf("Not found"), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 	} else if err != nil {
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 	} else {

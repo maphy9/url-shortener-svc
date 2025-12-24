@@ -8,8 +8,5 @@ type ShortenURLRequest struct {
 
 func (r ShortenURLRequest) IsValid() bool {
 	_, err := url.ParseRequestURI(r.URL)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
