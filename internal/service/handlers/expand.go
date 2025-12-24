@@ -7,9 +7,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
-type Code string
-
-func (c Code) isValid() bool {
+func isValidCode(c string) bool {
 	if len(c) == 0 {
 		return false
 	}
@@ -24,14 +22,14 @@ func (c Code) isValid() bool {
 func ExpandURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	
-	code := Code(chi.URLParam(r, "code"))
-	if !code.isValid() {
+	code := chi.URLParam(r, "code")
+	if !isValidCode(code) {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	db := DB(r)
-	query := Query{
+	query := SQLQuery{
 		SQL: `
 			SELECT url FROM url_mapping
 			WHERE code = $1

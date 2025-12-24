@@ -4,53 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"time"
+
+	"github.com/maphy9/url-shortener-svc/internal/service/requests"
 )
-
-type ShortenURLRequest struct {
-	URL string `json:"url"`
-}
-
-func (r ShortenURLRequest) isValid() bool {
-	_, err := url.ParseRequestURI(r.URL)
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-type Query struct {
-	SQL string
-	Args []interface{}
-}
-
-func (q Query) ToSql() (string, []interface{}, error) {
-	return q.SQL, q.Args, nil
-}
-
-type URLMapping struct {
-	URL string				`db:"url" json:"url"`
-	Code string				`db:"code" json:"code"`
-	CreatedAt time.Time		`db:"created_at" json:"created_at"`
-}
 
 func ShortenURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var body ShortenURLRequest
+	var body requests.ShortenURLRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, "Bad request body", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(body.URL)
-	if !body.isValid() {
+	if !body.IsValid() {
 		http.Error(w, "Bad url", http.StatusBadRequest)
 		return
 	}
 
 	db := DB(r)
-	query := Query{
+	query := SQLQuery{
 		SQL: `
 			WITH ins AS (
 				INSERT INTO url_mapping(url, code)
