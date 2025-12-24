@@ -1,9 +1,9 @@
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS url_mapping
 (
-    url TEXT NOT NULL UNIQUE,
-    code TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ DEFAULT current_timestamp
+  url text NOT NULL UNIQUE,
+  code text NOT NULL UNIQUE,
+  created_at timestamptz DEFAULT current_timestamp
 );
 
 CREATE SEQUENCE IF NOT EXISTS code_sequence
@@ -29,3 +29,8 @@ $body$ LANGUAGE plpgsql IMMUTABLE;
 -- +migrate StatementEnd
 
 -- +migrate Down
+DROP FUNCTION IF EXISTS to_base62(val bigint);
+
+DROP SEQUENCE IF EXISTS code_sequence CASCADE;
+
+DROP TABLE IF EXISTS url_mapping CASCADE;
