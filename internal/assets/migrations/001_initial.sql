@@ -28,21 +28,4 @@ END;
 $body$ LANGUAGE plpgsql IMMUTABLE;
 -- +migrate StatementEnd
 
--- +migrate StatementBegin
-CREATE OR REPLACE FUNCTION from_base62(val text)
-RETURNS bigint
-AS $body$
-DECLARE
-  chars text := '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  res bigint := 0;
-  i int;
-BEGIN
-  FOR i IN 1..length(val) LOOP
-    res := res * 62 + (strpos(chars, substr(val, i, 1)) - 1);
-  END LOOP;
-  RETURN res;
-END;
-$body$ LANGUAGE plpgsql IMMUTABLE;
--- +migrate StatementEnd
-
 -- +migrate Down
