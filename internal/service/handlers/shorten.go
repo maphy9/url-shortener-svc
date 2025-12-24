@@ -42,7 +42,13 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	shortURL := fmt.Sprintf("%s://%s/%s", scheme, r.Host, code)
+	
 	w.Header().Set("Content-Type", "text/plain")
-	shortURL := fmt.Sprintf("http://%s/%s", r.Host, code)
 	w.Write([]byte(shortURL))
 }

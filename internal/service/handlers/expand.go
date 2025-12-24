@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -37,9 +38,11 @@ func ExpandURL(w http.ResponseWriter, r *http.Request) {
 		Args: []interface{} { code },
 	}
 	var url string
-	if err := db.GetContext(ctx, &url, query); err != nil {
+	if err := db.GetContext(ctx, &url, query); err == sql.ErrNoRows {
+		http.Error(w, fmt.Sprintf("Not found"), http.StatusNotFound)
+	} else if err != nil {
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
-		return
+	} else {
+		http.Redirect(w, r, url, http.StatusPermanentRedirect)
 	}
-	http.Redirect(w, r, url, http.StatusPermanentRedirect)
 }
