@@ -12,27 +12,20 @@ import (
 func ExpandURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	code := chi.URLParam(r, "code")
-	matched, err := regexp.MatchString(`^[0-9a-zA-Z]{1,7}$`, code)
+	alias := chi.URLParam(r, "alias")
+	matched, err := regexp.MatchString(`^[0-9a-zA-Z]{1,7}$`, alias)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Server error: %v", err), http.StatusInternalServerError)
-		return		
+		return
 	}
 	if !matched {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	db := DB(r)
-	query := SQLQuery{
-		SQL: `
-			SELECT url FROM url_mapping
-			WHERE code = $1
-		`,
-		Args: []interface{}{code},
-	}
-	var url string
-	if err := db.GetContext(ctx, &url, query); err == sql.ErrNoRows {
+	aliasManager := AliasManager(r)
+	url, err := aliasManager.GetOriginalUrl(ctx, alias)
+	if err == sql.ErrNoRows {
 		http.Error(w, "Not found", http.StatusNotFound)
 	} else if err != nil {
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)

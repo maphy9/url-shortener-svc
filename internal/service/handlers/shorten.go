@@ -21,24 +21,9 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := DB(r)
-	query := SQLQuery{
-		SQL: `
-			WITH ins AS (
-				INSERT INTO url_mapping(url, code)
-				VALUES($1, to_base62(nextval('code_sequence')))
-				ON CONFLICT (url) DO NOTHING
-				RETURNING code
-			)
-			SELECT code FROM ins
-			UNION ALL
-			SELECT code FROM url_mapping
-			WHERE url = $1 LIMIT 1
-		`,
-		Args: []interface{}{body.URL},
-	}
-	var code string
-	if err := db.GetContext(ctx, &code, query); err != nil {
+	aliasManager := AliasManager(r)
+	alias, err := aliasManager.GetAlias(ctx, body.Url)
+	if err != nil {
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -47,12 +32,11 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 	if r.TLS != nil {
 		scheme = "https"
 	}
-	shortURL := fmt.Sprintf("%s://%s/%s", scheme, r.Host, code)
+	shortUrl := fmt.Sprintf("%s://%s/%s", scheme, r.Host, alias)
 
 	log := Log(r)
 	w.Header().Set("Content-Type", "text/plain")
-	_, err := w.Write([]byte(shortURL))
-	if err != nil {
+	if _, err := w.Write([]byte(shortUrl)); err != nil {
 		log.WithError(err).Error("Write failed")
 		return
 	}

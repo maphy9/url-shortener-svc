@@ -14,12 +14,12 @@ func (s *service) router() chi.Router {
 		ape.LoganMiddleware(s.log),
 		ape.CtxMiddleware(
 			handlers.CtxLog(s.log),
-			handlers.CtxDB(s.db),
+			handlers.CtxAliasManager(s.aliasManager),
 		),
 	)
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", handlers.ShortenURL)
-		r.Get("/{code}", handlers.ExpandURL)
+		r.Get("/{alias}", handlers.ExpandURL)
 	})
 
 	return r

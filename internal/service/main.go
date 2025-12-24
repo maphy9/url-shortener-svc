@@ -5,17 +5,17 @@ import (
 	"net/http"
 
 	"github.com/maphy9/url-shortener-svc/internal/config"
+	"github.com/maphy9/url-shortener-svc/internal/service/data"
 	"gitlab.com/distributed_lab/kit/copus/types"
-	"gitlab.com/distributed_lab/kit/pgdb"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
 )
 
 type service struct {
-	log      *logan.Entry
-	db       *pgdb.DB
-	copus    types.Copus
-	listener net.Listener
+	log          *logan.Entry
+	aliasManager data.AliasManager
+	copus        types.Copus
+	listener     net.Listener
 }
 
 func (s *service) run() error {
@@ -31,10 +31,10 @@ func (s *service) run() error {
 
 func newService(cfg config.Config) *service {
 	return &service{
-		log:      cfg.Log(),
-		db:       cfg.DB(),
-		copus:    cfg.Copus(),
-		listener: cfg.Listener(),
+		log:          cfg.Log(),
+		aliasManager: data.NewUrlAliasesManager(cfg.DB()),
+		copus:        cfg.Copus(),
+		listener:     cfg.Listener(),
 	}
 }
 
