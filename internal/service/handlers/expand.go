@@ -43,5 +43,5 @@ func ExpandURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, url, http.StatusMovedPermanently)
+	http.Redirect(w, r, url, http.StatusPermanentRedirect)
 }
