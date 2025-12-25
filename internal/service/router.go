@@ -2,11 +2,13 @@ package service
 
 import (
 	"github.com/go-chi/chi"
+	"github.com/maphy9/url-shortener-svc/internal/config"
+	"github.com/maphy9/url-shortener-svc/internal/data/pg"
 	"github.com/maphy9/url-shortener-svc/internal/service/handlers"
 	"gitlab.com/distributed_lab/ape"
 )
 
-func (s *service) router() chi.Router {
+func (s *service) router(cfg config.Config) chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(
@@ -14,7 +16,7 @@ func (s *service) router() chi.Router {
 		ape.LoganMiddleware(s.log),
 		ape.CtxMiddleware(
 			handlers.CtxLog(s.log),
-			handlers.CtxAliasManager(s.aliasManager),
+			handlers.CtxDB(pg.NewMasterQ(cfg.DB())),
 		),
 	)
 	r.Route("/", func(r chi.Router) {

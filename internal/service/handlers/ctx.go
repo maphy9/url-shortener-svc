@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/maphy9/url-shortener-svc/internal/service/data"
+	"github.com/maphy9/url-shortener-svc/internal/data"
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
@@ -12,7 +12,7 @@ type ctxKey int
 
 const (
 	logCtxKey ctxKey = iota
-	aliasManagerCtxKey
+	dbCtxKey
 )
 
 func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
@@ -21,9 +21,9 @@ func CtxLog(entry *logan.Entry) func(context.Context) context.Context {
 	}
 }
 
-func CtxAliasManager(aliasManager data.AliasManager) func(context.Context) context.Context {
+func CtxDB(master data.MasterQ) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, aliasManagerCtxKey, aliasManager)
+		return context.WithValue(ctx, dbCtxKey, master)
 	}
 }
 
@@ -31,6 +31,6 @@ func Log(r *http.Request) *logan.Entry {
 	return r.Context().Value(logCtxKey).(*logan.Entry)
 }
 
-func AliasManager(r *http.Request) data.AliasManager {
-	return r.Context().Value(aliasManagerCtxKey).(data.AliasManager)
+func DB(r *http.Request) data.MasterQ {
+	return r.Context().Value(dbCtxKey).(data.MasterQ)
 }

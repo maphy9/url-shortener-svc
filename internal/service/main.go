@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/maphy9/url-shortener-svc/internal/config"
-	"github.com/maphy9/url-shortener-svc/internal/service/data"
 	"gitlab.com/distributed_lab/kit/copus/types"
 	"gitlab.com/distributed_lab/logan/v3"
 	"gitlab.com/distributed_lab/logan/v3/errors"
@@ -13,14 +12,13 @@ import (
 
 type service struct {
 	log          *logan.Entry
-	aliasManager data.AliasManager
 	copus        types.Copus
 	listener     net.Listener
 }
 
-func (s *service) run() error {
+func (s *service) run(cfg config.Config) error {
 	s.log.Info("Service started")
-	r := s.router()
+	r := s.router(cfg)
 
 	if err := s.copus.RegisterChi(r); err != nil {
 		return errors.Wrap(err, "cop failed")
@@ -32,14 +30,13 @@ func (s *service) run() error {
 func newService(cfg config.Config) *service {
 	return &service{
 		log:          cfg.Log(),
-		aliasManager: data.NewUrlAliasesManager(cfg.DB()),
 		copus:        cfg.Copus(),
 		listener:     cfg.Listener(),
 	}
 }
 
 func Run(cfg config.Config) {
-	if err := newService(cfg).run(); err != nil {
+	if err := newService(cfg).run(cfg); err != nil {
 		panic(err)
 	}
 }

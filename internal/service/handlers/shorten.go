@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 
+	"github.com/maphy9/url-shortener-svc/internal/data"
 	"github.com/maphy9/url-shortener-svc/internal/service/requests"
 )
 
@@ -21,12 +24,30 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	aliasManager := AliasManager(r)
-	alias, err := aliasManager.GetAlias(ctx, body.Url)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
-		return
+	// TODO: This is not concurrency safe, need to handle simulanious INSERT
+	var alias string
+	masterQ := DB(r)
+	transaction := func(q data.MasterQ) error {
+		mapping, err := q.Mapping().GetByUrl(ctx, body.Url)
+		if err == nil {
+			alias = mapping.Alias
+			return nil
+		}
+		if err != sql.ErrNoRows {
+			return err
+		}
+		// TODO: Change aliasing algorithm
+		mapping, err = q.Mapping().Create(ctx, data.Mapping{
+			Url: body.Url,
+			Alias: fmt.Sprintf("%v", rand.Int64()),
+		})
+		if err != nil {
+			return err
+		}
+		alias = mapping.Alias
+		return nil
 	}
+	masterQ.Transaction(transaction)
 
 	scheme := "http"
 	if r.TLS != nil {
