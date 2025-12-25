@@ -2,34 +2,34 @@ package handlers
 
 import (
 	"database/sql"
-	"fmt"
+	"errors"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/maphy9/url-shortener-svc/internal/service/errors/apierrors"
+	"github.com/maphy9/url-shortener-svc/internal/service/helpers"
+	"github.com/maphy9/url-shortener-svc/internal/service/requests"
+	"gitlab.com/distributed_lab/ape"
 )
 
-func ExpandURL(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+func Expand(w http.ResponseWriter, r *http.Request) {
+	logger := helpers.Log(r)
 
-	// TODO: Uncomment validation when aliasing algorithm was changed
-	alias := chi.URLParam(r, "alias")
-	// matched, err := regexp.MatchString(`^[0-9a-zA-Z]{1,7}$`, alias)
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Server error: %v", err), http.StatusInternalServerError)
-	// 	return
-	// }
-	// if !matched {
-	// 	http.Error(w, "Not found", http.StatusNotFound)
-	// 	return
-	// }
-
-	mappingQ := DB(r)
-	mapping, err := mappingQ.Mapping().GetByAlias(ctx, alias)
-	if err == sql.ErrNoRows {
-		http.Error(w, "Not found", http.StatusNotFound)
-	} else if err != nil {
-		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
-	} else {
-		http.Redirect(w, r, mapping.Url, http.StatusPermanentRedirect)
+	request, err := requests.NewExpandRequest(r)
+	if err != nil {
+		logger.WithError(err).Debug("Invalid request")
+		ape.RenderErr(w, apierrors.BadRequest())
+		return
 	}
+
+	originalUrl, err := helpers.GetOriginalUrl(r, request.Alias)
+	if errors.Is(err, sql.ErrNoRows) {
+		ape.RenderErr(w, apierrors.NotFound())
+		return
+	}
+	if err != nil {
+		logger.WithError(err).Debug("Internal Server Error")
+		ape.RenderErr(w, apierrors.InternalServerError())
+		return
+	}
+	ape.Render(w, originalUrl)
 }

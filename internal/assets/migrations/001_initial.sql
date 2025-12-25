@@ -6,5 +6,9 @@ CREATE TABLE IF NOT EXISTS mapping
   created_at timestamptz DEFAULT current_timestamp
 );
 
+CREATE SEQUENCE IF NOT EXISTS code_sequence;
+
 -- +migrate Down
+DROP SEQUENCE IF EXISTS code_sequence;
+
 DROP TABLE IF EXISTS mapping CASCADE;

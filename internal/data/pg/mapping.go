@@ -45,6 +45,14 @@ func (m *mappingQ) GetByAlias(ctx context.Context, alias string) (data.Mapping, 
 	return result, err
 }
 
+func (m *mappingQ) GetCode(ctx context.Context) (int64, error) {
+	query := m.sql.Select(`nextval('code_sequence')`)
+
+	var result int64
+	err := m.db.GetContext(ctx, &result, query)
+	return result, err
+}
+
 func (m *mappingQ) Create(ctx context.Context, mapping data.Mapping) (data.Mapping, error) {
 	clauses := structs.Map(mapping)
 
