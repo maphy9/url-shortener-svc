@@ -11,7 +11,7 @@ type MappingQ interface {
 	GetByAlias(ctx context.Context, alias string) (Mapping, error)
 
 	GetCode(ctx context.Context) (int64, error)
-	
+
 	Create(ctx context.Context, mapping Mapping) (Mapping, error)
 }
 

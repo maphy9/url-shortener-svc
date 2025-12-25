@@ -11,9 +11,9 @@ import (
 )
 
 type service struct {
-	log          *logan.Entry
-	copus        types.Copus
-	listener     net.Listener
+	log      *logan.Entry
+	copus    types.Copus
+	listener net.Listener
 }
 
 func (s *service) run(cfg config.Config) error {
@@ -29,9 +29,9 @@ func (s *service) run(cfg config.Config) error {
 
 func newService(cfg config.Config) *service {
 	return &service{
-		log:          cfg.Log(),
-		copus:        cfg.Copus(),
-		listener:     cfg.Listener(),
+		log:      cfg.Log(),
+		copus:    cfg.Copus(),
+		listener: cfg.Listener(),
 	}
 }
 

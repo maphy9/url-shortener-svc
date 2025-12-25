@@ -30,7 +30,7 @@ func GetShortUrl(r *http.Request, url string) (string, error) {
 		}
 
 		mapping, err = q.Mapping().Create(ctx, data.Mapping{
-			Url: url,
+			Url:   url,
 			Alias: util.ToBase62(code),
 		})
 		if err != nil {

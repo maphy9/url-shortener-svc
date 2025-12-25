@@ -13,7 +13,6 @@ import (
 
 func Expand(w http.ResponseWriter, r *http.Request) {
 	logger := helpers.Log(r)
-
 	request, err := requests.NewExpandRequest(r)
 	if err != nil {
 		logger.WithError(err).Debug("Invalid request")
