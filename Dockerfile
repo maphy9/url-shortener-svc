@@ -16,9 +16,8 @@ RUN GOOS=linux go build  -o /usr/local/bin/url-shortener-svc /go/src/github.com/
 FROM alpine:3.19
 
 COPY --from=buildbase /usr/local/bin/url-shortener-svc /usr/local/bin/url-shortener-svc
-COPY --from=buildbase /go/src/github.com/maphy9/url-shortener-svc/config.yaml /usr/local/config/config.yaml
 
-ENV KV_VIPER_FILE=/usr/local/config/config.yaml
+ENV KV_VIPER_FILE=/app/config.yaml
 
 RUN apk add --no-cache ca-certificates
 
