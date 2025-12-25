@@ -1,12 +1,25 @@
 package requests
 
-import "net/url"
+import (
+	"encoding/json"
+	"net/http"
+	"net/url"
+)
 
-type ShortenURLRequest struct {
-	URL string `json:"url"`
+func NewShortenRequest(r *http.Request) (ShortenRequest, error) {
+	var request ShortenRequest
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		return request, err
+	}
+	return request, request.validate()
 }
 
-func (r ShortenURLRequest) IsValid() bool {
-	_, err := url.ParseRequestURI(r.URL)
-	return err == nil
+type ShortenRequest struct {
+	Url string `json:"url"`
+}
+
+func (r ShortenRequest) validate() error {
+	_, err := url.ParseRequestURI(r.Url)
+	return err
 }

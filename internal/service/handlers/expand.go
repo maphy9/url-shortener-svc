@@ -2,47 +2,34 @@ package handlers
 
 import (
 	"database/sql"
-	"fmt"
+	"errors"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/maphy9/url-shortener-svc/internal/service/errors/apierrors"
+	"github.com/maphy9/url-shortener-svc/internal/service/helpers"
+	"github.com/maphy9/url-shortener-svc/internal/service/requests"
+	"github.com/maphy9/url-shortener-svc/internal/service/responses"
+	"gitlab.com/distributed_lab/ape"
 )
 
-func isValidCode(c string) bool {
-	if len(c) == 0 {
-		return false
-	}
-	for _, r := range c {
-		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9') {
-			return false
-		}
-	}
-	return true
-}
-
-func ExpandURL(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	code := chi.URLParam(r, "code")
-	if !isValidCode(code) {
-		http.Error(w, "Not found", http.StatusNotFound)
+func Expand(w http.ResponseWriter, r *http.Request) {
+	logger := helpers.Log(r)
+	request, err := requests.NewExpandRequest(r)
+	if err != nil {
+		logger.WithError(err).Debug("Invalid request")
+		ape.RenderErr(w, apierrors.BadRequest())
 		return
 	}
 
-	db := DB(r)
-	query := SQLQuery{
-		SQL: `
-			SELECT url FROM url_mapping
-			WHERE code = $1
-		`,
-		Args: []interface{}{code},
+	originalUrl, err := helpers.GetOriginalUrl(r, request.Alias)
+	if errors.Is(err, sql.ErrNoRows) {
+		ape.RenderErr(w, apierrors.NotFound())
+		return
 	}
-	var url string
-	if err := db.GetContext(ctx, &url, query); err == sql.ErrNoRows {
-		http.Error(w, "Not found", http.StatusNotFound)
-	} else if err != nil {
-		http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
-	} else {
-		http.Redirect(w, r, url, http.StatusPermanentRedirect)
+	if err != nil {
+		logger.WithError(err).Debug("Internal Server Error")
+		ape.RenderErr(w, apierrors.InternalServerError())
+		return
 	}
+	ape.Render(w, responses.NewExpandResponse(originalUrl))
 }
