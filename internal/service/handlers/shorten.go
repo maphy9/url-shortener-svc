@@ -24,7 +24,6 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: This is not concurrency safe, need to handle simulanious INSERT
 	var alias string
 	masterQ := DB(r)
 	transaction := func(q data.MasterQ) error {

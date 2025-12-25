@@ -50,7 +50,11 @@ func (m *mappingQ) Create(ctx context.Context, mapping data.Mapping) (data.Mappi
 
 	query := m.sql.Insert(mappingTableName).
 		SetMap(clauses).
-		Suffix("RETURNING *")
+		Suffix(`
+			ON CONFLICT (url)
+			DO UPDATE SET alias = mapping.alias
+			RETURNING *
+		`)
 
 	var result data.Mapping
 	err := m.db.GetContext(ctx, &result, query)
