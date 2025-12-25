@@ -6,6 +6,7 @@ import (
 	"github.com/maphy9/url-shortener-svc/internal/service/errors/apierrors"
 	"github.com/maphy9/url-shortener-svc/internal/service/helpers"
 	"github.com/maphy9/url-shortener-svc/internal/service/requests"
+	"github.com/maphy9/url-shortener-svc/internal/service/responses"
 	"gitlab.com/distributed_lab/ape"
 )
 
@@ -24,5 +25,5 @@ func Shorten(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, apierrors.InternalServerError())
 		return
 	}
-	ape.Render(w, shortUrl)
+	ape.Render(w, responses.NewShortenResponse(shortUrl))
 }
